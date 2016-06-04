@@ -1,0 +1,215 @@
+Regression Modeling in Practice Course
+by Wesleyan University
+
+Week 2. Basics of Linear Regression
+
+Assignment: Test a Basic Linear Regression Model
+
+RESULTS OF LINEAR REGRESSION ANALISYS
+
+Some exploratory data analysis were performed taken from Cortez and Morais study about predicting forest fires using metereological data and some linear regression models were built, reaching the following results:
+
+The results of the linear regression models indicated than only temperature (Beta = 1.0726, p = 0.026) was significantly and positively associated with the total burned area due to forest fires. P-value of other models are greater than treshold value of 0.05 so results are not statistically significant to reject null hypothesis.
+
+P-value of combination model (p = 0.410) is bigger than treshold value, so the combination of the Canadian Forest Fire Weather Index (FWI) system variables plus temperature, humidity, wind and rain are not significantly associated with the total burned area due to forest fires. P-value of temperature in combination model (p = 0.282) is not longer statistically significant, a confounder variable?
+
+Next is shown the source code used, as well as some demonstrative outputs.
+
+iPython and other files in https://github.com/MColosso/Forest-Fires
+
+----------------------------------
+
+SOURCE CODE
+# Regression Modeling in Practice Course
+# by Wesleyan University
+# 
+# Linear Regression Model
+# Mario Colosso V.
+
+get_ipython().magic('matplotlib inline')
+
+import pandas
+import matplotlib.pyplot as plt
+import statsmodels.formula.api as smf
+
+pandas.set_option('display.mpl_style', 'default')   # Make the graphs a bit prettier
+pandas.set_option('display.float_format', lambda x:'%.3f'%x)   # Show 3 decimals
+plt.rcParams['figure.figsize'] = (15, 5)
+
+# Load Forest Fires .csv file
+fires = pandas.read_csv('forestfires.csv')
+
+
+# 1. Lets have a brief look of Fires DataFrame
+fires.head()   #Show first rows   ***See output below
+
+# Get some descriptive statistic of the data
+fires_attributes = fires.columns.values.tolist()
+number_of_columns = len(fires_attributes)
+
+statistics = pandas.DataFrame(index=range(0, number_of_columns - 4), columns=('name', 'min', 'max', 'mean'))
+
+for attr in range(4, number_of_columns):
+    idx = attr - 4
+    statistics.loc[idx] = {'name': fires_attributes[attr], 
+                           'min':  min(fires[fires_attributes[attr]]), 
+                           'max':  max(fires[fires_attributes[attr]]),
+                           'mean': fires[fires_attributes[attr]].mean()}
+
+print(statistics)   #Show min, max and mean of original variables   ***See output below
+
+fires['temp'].plot()   #Plot temperature graph
+
+fires[['temp', 'RH', 'wind', 'rain']].plot()   #Plot temperature, relative humidity, wind and rain graphs
+
+print(fires.corr())   #Show correlation between variables
+
+
+# ## 2. Linear regression
+
+# Convert categorical variables (months and days) into numerical values
+months_table = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+days_table =   ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+
+fires['month'] = [months_table.index(month) for month in fires['month'] ]
+fires['day'] =   [days_table.index(day)     for day   in fires['day']   ]
+
+print(fires.head())
+
+# Center each explanatory variable
+for idx in range(0, number_of_columns - 1):
+    fires[fires_attributes[idx]] = fires[fires_attributes[idx]] - fires[fires_attributes[idx]].mean()
+
+# Show descriptive statistics of all variables
+for idx in range(0, number_of_columns):
+    statistics.loc[idx] = {'name': fires_attributes[idx], 
+                           'min':  min(fires[fires_attributes[idx]]), 
+                           'max':  max(fires[fires_attributes[idx]]),
+                           'mean': fires[fires_attributes[idx]].mean()}
+
+print(statistics)   #Only explanatory variables were centered   ***See output below
+
+# Generate models to test each variable
+for idx in range(4, number_of_columns - 1):
+    model = smf.ols(formula = "area ~ " + fires_attributes[idx], data = fires).fit()
+    print(model.summary())   ***See output below
+    print()
+
+# The results of the linear regression models indicated than only temperature (Beta = 1.0726, p = 0.026)
+# was significantly and positively associated with the total burned area due to forest fires. P-value of
+# other models are greater than treshold value of 0.05 so results are not statistically significant
+# to reject null hypothesis.
+
+# Create a Linear Regression Model for a combination of variables
+explanatory_variables = "FFMC + DMC + DC + ISI + temp + RH + wind + rain"
+response_variable =     "area"
+
+model = smf.ols(formula = response_variable + " ~ " + explanatory_variables, data = fires).fit()
+
+print(model.summary())   ***See output below
+
+# P-value of combination model (p = 0.410) is bigger than treshold value, so the combination of the Canadian
+# Forest Fire Weather Index (FWI) system plus temperature, humidity, wind and rain are not significantly
+# associated with the total burned area due to forest fires. _p-value_ of temperature in combination model
+# (p = 0.282) is not longer statistically significant, a confounder variable?
+
+----------------------------------
+
+SOME OUTPUTS
+
+print(fires.head())   #Show first rows
+   X  Y month  day   FFMC    DMC      DC   ISI   temp  RH  wind  rain  area
+0  7  5   mar  fri 86.200 26.200  94.300 5.100  8.200  51 6.700 0.000 0.000
+1  7  4   oct  tue 90.600 35.400 669.100 6.700 18.000  33 0.900 0.000 0.000
+2  7  4   oct  sat 90.600 43.700 686.900 6.700 14.600  33 1.300 0.000 0.000
+3  8  6   mar  fri 91.700 33.300  77.500 9.000  8.300  97 4.000 0.200 0.000
+4  8  6   mar  sun 89.300 51.300 102.200 9.600 11.400  99 1.800 0.000 0.000
+
+print(statistics)   #Show min, max and mean of original data
+   name    min      max    mean
+0  FFMC 18.700   96.200  90.645
+1   DMC  1.100  291.300 110.872
+2    DC  7.900  860.600 547.940
+3   ISI  0.000   56.100   9.022
+4  temp  2.200   33.300  18.889
+5    RH     15      100  44.288
+6  wind  0.400    9.400   4.018
+7  rain  0.000    6.400   0.022
+8  area  0.000 1090.840  12.847
+
+print(statistics)   #Only explanatory variables were centered
+     name      min      max   mean
+0       X   -3.669    4.331  0.000
+1       Y   -2.300    4.700  0.000
+2   month   -6.476    4.524  0.000
+3     day   -2.973    3.027 -0.000
+4    FFMC  -71.945    5.555  0.000
+5     DMC -109.772  180.428 -0.000
+6      DC -540.040  312.660  0.000
+7     ISI   -9.022   47.078 -0.000
+8    temp  -16.689   14.411  0.000
+9      RH  -29.288   55.712  0.000
+10   wind   -3.618    5.382 -0.000
+11   rain   -0.022    6.378  0.000
+12   area    0.000 1090.840 12.847
+
+Linear Regression Module of temperature variable
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                   area   R-squared:                       0.010
+Model:                            OLS   Adj. R-squared:                  0.008
+Method:                 Least Squares   F-statistic:                     4.978
+Date:                Thu, 02 Jun 2016   Prob (F-statistic):             0.0261
+Time:                        23:20:48   Log-Likelihood:                -2878.0
+No. Observations:                 517   AIC:                             5760.
+Df Residuals:                     515   BIC:                             5768.
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [95.0% Conf. Int.]
+------------------------------------------------------------------------------
+Intercept     12.8473      2.789      4.607      0.000         7.368    18.326
+temp           1.0726      0.481      2.231      0.026         0.128     2.017
+==============================================================================
+Omnibus:                      979.270   Durbin-Watson:                   1.650
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):           793772.021
+Skew:                          12.687   Prob(JB):                         0.00
+Kurtosis:                     193.275   Cond. No.                         5.80
+==============================================================================
+
+Warnings:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+Linear Regression Model of combination of variables
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                   area   R-squared:                       0.016
+Model:                            OLS   Adj. R-squared:                  0.001
+Method:                 Least Squares   F-statistic:                     1.033
+Date:                Thu, 02 Jun 2016   Prob (F-statistic):              0.410
+Time:                        23:20:48   Log-Likelihood:                -2876.3
+No. Observations:                 517   AIC:                             5771.
+Df Residuals:                     508   BIC:                             5809.
+Df Model:                           8                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [95.0% Conf. Int.]
+------------------------------------------------------------------------------
+Intercept     12.8473      2.799      4.590      0.000         7.349    18.346
+FFMC          -0.0233      0.661     -0.035      0.972        -1.322     1.275
+DMC            0.0765      0.067      1.145      0.253        -0.055     0.208
+DC            -0.0057      0.016     -0.349      0.727        -0.038     0.026
+ISI           -0.6984      0.772     -0.905      0.366        -2.215     0.818
+temp           0.8480      0.787      1.077      0.282        -0.699     2.394
+RH            -0.1963      0.237     -0.829      0.407        -0.661     0.269
+wind           1.5271      1.670      0.914      0.361        -1.754     4.808
+rain          -2.5400      9.676     -0.263      0.793       -21.549    16.469
+==============================================================================
+Omnibus:                      978.059   Durbin-Watson:                   1.645
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):           792201.920
+Skew:                          12.652   Prob(JB):                         0.00
+Kurtosis:                     193.092   Cond. No.                         871.
+==============================================================================
+
+Warnings:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
