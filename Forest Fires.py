@@ -40,8 +40,6 @@
 # 
 # ```
 
-# In[1]:
-
 get_ipython().magic('matplotlib inline')
 
 import pandas
@@ -55,35 +53,23 @@ plt.style.use('ggplot') # Make the graphs a bit prettier
 plt.rcParams['figure.figsize'] = (15, 5)
 
 
-# ### Load Forest Fires .csv file
-
-# In[2]:
+# Load Forest Fires .csv file
 
 fires = pandas.read_csv('forestfires.csv')
 
 
-# ## 1. Lets have a brief look of Fires DataFrame
+# 1. Lets have a brief look of Fires DataFrame
 
-# In[3]:
-
-fires.head()   #Show first rows
+print(fires.head())   #Show first rows
 
 
-# ### Get some descriptive statistic of the data
-
-# In[4]:
+# Get some descriptive statistic of the data
 
 fires_attributes = fires.columns.values.tolist()
 number_of_columns = len(fires_attributes)
 
-
-# In[5]:
-
 statistics = pandas.DataFrame(index=range(0, number_of_columns - 2), 
                               columns=('min', 'max', 'mean', 'median', 'std'))
-
-
-# In[6]:
 
 idx = 0
 for attr in [0, 1] + list(range(4, number_of_columns)):
@@ -96,15 +82,10 @@ for attr in [0, 1] + list(range(4, number_of_columns)):
 statistics.index = [fires_attributes[attr] 
                     for attr in [0, 1] + list(range(4, number_of_columns))]
 
-
-# In[7]:
-
-statistics.T   #Show min, max, mean, median and standard deviation
+print(statistics.T)   #Show min, max, mean, median and standard deviation
 
 
-# ### And display a graph of quantitative variables vs area
-
-# In[8]:
+# Display a graph of quantitative variables vs area
 
 attributes = [0, 1] + list(range(4, number_of_columns - 1))
 n_cols = 3
@@ -121,36 +102,24 @@ for attr in attributes:
 plt.show()
 
 
-# #### There are some data values where the burned area is away from other values
+# There are some data values where the burned area is away from other values
 
-# In[9]:
-
-fires[fires['area'] > 250]
+print(fires[fires['area'] > 250])
 
 
-# ### Plot some other variables
-
-# In[10]:
+# Plot some other variables
 
 fires['temp'].plot()   #Plot temperature graph
-
-
-# In[11]:
 
 fires[['temp', 'RH', 'wind', 'rain']].plot()   #Plot temperature, relative humidity, wind 
                                                #and rain graphs
 
-
-# In[12]:
-
-fires.corr()   #Show correlation between variables
+print(fires.corr())   #Show correlation between variables
 
 
-# ## 2. Linear regression
+# 2. Linear regression
 
-# ### Convert categorical variables (months and days) into numerical values
-
-# In[13]:
+# Convert categorical variables (months and days) into numerical values
 
 months_table = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
@@ -162,33 +131,24 @@ fires['day'] =   [days_table.index(day)     for day   in fires['day']   ]
 fires['X'] -= 1
 fires['Y'] -= 2
 
-fires.head()
+print(fires.head())
 
 
 # ### Center each explanatory variable
 
-# In[14]:
-
 for idx in list(range(4, number_of_columns - 1)):   #Exclude categorical variables
-    fires[fires_attributes[idx]] = fires[fires_attributes[idx]] -                                    fires[fires_attributes[idx]].mean()
-
-
-# In[15]:
+    fires[fires_attributes[idx]] = fires[fires_attributes[idx]] - \
+                                   fires[fires_attributes[idx]].mean()
 
 statistics = [fires[fires_attributes[idx]].mean() for idx in range(0, number_of_columns)]
 statistics = pandas.DataFrame(statistics, 
                               index=fires_attributes,
                               columns=['mean'])
 
-
-# In[16]:
-
-statistics.T   #Only quantitative explanatory variables (FFMC thru rain) were centered
+print(statistics.T)   #Only quantitative explanatory variables (FFMC thru rain) were centered
 
 
-# ### Generate models to test each variable
-
-# In[17]:
+# Generate models to test each variable
 
 statistics = list()
 for idx in range(0, number_of_columns - 1):
@@ -205,51 +165,44 @@ for idx in range(0, number_of_columns - 1):
     statistics.append([model.f_pvalue, model.rsquared])
 
 
-# ### Models summary:
-
-# In[18]:
+# Models summary:
 
 statistics = pandas.DataFrame(statistics, 
                               index=fires_attributes[: number_of_columns - 1], 
                               columns=['p-value', 'R-squared'])
-statistics.T
+print(statistics.T)
+
+print(statistics[statistics['p-value'] < 0.05])
 
 
-# In[19]:
-
-statistics[statistics['p-value'] < 0.05]
-
-
-# 'temp' is the only statistically significant variable (p-value = 0.026) but it only explains the 1% of forest fires. Let's show its linear model summary:
-
-# In[20]:
+# 'temp' is the only statistically significant variable (p-value = 0.026) but it only explains the 1% of
+# forest fires. Let's show its linear model summary:
 
 print((smf.ols(formula = "area ~ temp", data = fires).fit()).summary())
 
 
-# **The results of the linear regression models indicated than only temperature (Beta = 1.0726, p = 0.026, $R^2$ = 0.010) was significantly and positively associated with the total burned area due to forest fires. _'p-value'_ of other models are greater than treshold value of 0.05 so results are not statistically significant to reject null hypothesis.**
+# The results of the linear regression models indicated than only temperature (Beta = 1.0726, p = 0.026,
+# R-squared = 0.010) was significantly and positively associated with the total burned area due to forest
+# fires. 'p-value' of other models are greater than treshold value of 0.05 so results are not statistically
+# significant to reject null hypothesis.
 
-# ### Create a Linear Regression Model for a combination of all variables
 
-# In[21]:
+# Create a Linear Regression Model for a combination of all variables
 
-explanatory_variables = "X + Y + month + day + FFMC + DMC + DC + ISI + temp + RH + " +                         "wind + rain"
+explanatory_variables = "X + Y + month + day + FFMC + DMC + DC + ISI + temp + RH + " +  \
+                        "wind + rain"
 response_variable =     "area"
 
 model = smf.ols(formula = response_variable + " ~ " + explanatory_variables, 
                 data = fires).fit()
 
-
-# In[22]:
-
 print(model.summary())
 
 
-# **_p-value_ of combination model (p = 0.410) is bigger than treshold value, so the combination of the Canadian Forest Fire Weather Index (FWI) system plus temperature, humidity, wind and rain are not significantly associated with the total burned area due to forest fires. _p-value_ of temperature in combination model (p = 0.282) is not longer statistically significant, a confounder variable?**
+# p-value of combination model (p = 0.410) is bigger than treshold value, so the combination of the Canadian
+# Forest Fire Weather Index (FWI) system plus temperature, humidity, wind and rain are not significantly associated
+# with the total burned area due to forest fires. _p-value_ of temperature in combination model (p = 0.282) is not
+# longer statistically significant, a confounder variable?
 # 
-# Also, there is a warning in previous model summary: _"The condition number is large, 1.76e+03. This might indicate that there are ***strong multicollinearity*** or other numerical problems."_   We will review this issue next week.
-
-# In[ ]:
-
-
-
+# Also, there is a warning in previous model summary: "The condition number is large, 1.76e+03. This might indicate
+# that there are strong multicollinearity or other numerical problems."   We will review this issue next week.
