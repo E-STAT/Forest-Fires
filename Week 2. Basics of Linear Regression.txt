@@ -9,7 +9,7 @@ RESULTS OF LINEAR REGRESSION ANALISYS
 
 Some exploratory data analysis were performed taken from Cortez and Morais study about predicting forest fires using metereological data and some linear regression models were built, reaching the following results:
 
-The results of the linear regression models indicated than only temperature (Beta = 1.0726, p = 0.026) was significantly and positively associated with the total burned area due to forest fires. P-value of other models are greater than treshold value of 0.05 so results are not statistically significant to reject null hypothesis.
+The results of the linear regression models indicated than only temperature (Beta = 1.0726, p = 0.026) was significantly and positively associated with the total burned area due to forest fires, but temperature only explains 1% of the variance in the response variable ('area') can be explained by the explanatory variable ('temp') (R-squared = 0.010). P-value of other models are greater than treshold value of 0.05 so results are not statistically significant to reject null hypothesis.
 
 P-value of combination model (p = 0.410) is bigger than treshold value, so the combination of the Canadian Forest Fire Weather Index (FWI) system variables plus temperature, humidity, wind and rain are not significantly associated with the total burned area due to forest fires. P-value of temperature in combination model (p = 0.282) is not longer statistically significant, a confounder variable?
 
