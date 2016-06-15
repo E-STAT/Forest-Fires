@@ -1,0 +1,47 @@
+Regression Modeling in Practice Course
+Wesleyan University
+
+Week 3. Multiple Regression
+
+Assignment: Test a Multiple Regression Model
+
+RESULTS OF MULTIPLE REGRESSION ANALISYS
+
+Some exploratory data analysis were performed and some linear regression models were generated from data taken from Cortez and Morais study about predicting forest fires using metereological data and some multiple regression models were built, reaching the following results:
+
+In previous linear regression analysis we found that only temperature (Beta = 1.0726, p = 0.026) was significantly and positively associated with the total burned area due to forest fires. P-value of other models are greater than treshold value of 0.05 so results are not statistically significant to reject null hypothesis.
+
+After adding relative humidity (RH) to the model, temperature (temp) is not longer statistically significant, so its a confounder variable: "temperature increases due to forest fire, or forest fire is helped by high temperatures?"
+
+---[resumen del modelo con todas las variables]---
+
+The multiple regression model with all variables used by Cortez and Morais in their study, only explains the 2.5% of variance (R-squared = 0.025) and no variable is statistically significant (p-values between 0.172 and 0.906), indicating the need of another expanatory variables, the need of more data, or due to unknown factors.
+
+---[qq-plot y standarized residuals plot]---
+
+Multiple regression models were generated adding one variable a time, showing the summary of the model, the quantile-quantile plot (qq-plot), left in previous graph, to see if the residuals followed a normal distribution, and the Standarized Residuals plot, right, which are, "simply, the residual values transformed to have a mean of zero and a standard deviation of one"
+
+The qq-plots of our regression models shows a straight line with high deviations at the lower and higher quantiles, indicating the residuals do not follow a normal distribution.
+
+The Standarized Residuals plot shows there are a group of observations whose residuals are greather than 2, 3 or more standard deviations implying the presence of extreme outliers.
+
+In all generated models, more than 1% of our observations has standardized residuals with an absolute value greater than 2.5, then there is evidence that the level of error within our model is unacceptable. That is, the model is a fairly poor fit to the observed data.
+
+
+Leverage plot permits identify observations that have an unusually large influence on the estimation of the predicted value of the response variable, burned area, or that are outliers, or both:
+
+---[leverage plot]---
+
+The leverage plot of full model shows one observation with a very high influence (observation 499, with near 90%), one with medium influence (observation 379, with near 45%) and one with medium-low influence (observation 22, with near 32%). The rest of the observations have influence under 20%
+
+The graph of full model also show us a group of ouliers. Note this extreme outliers are the same observations we found during data exploration: 238, 415, 479, plus a cloud of minor outliers (residuals outside range -2 to 2 standard deviations), but with low influence (< 5%) on the estimation of the regression model.
+
+No observations in this data are both high leverage and outliers.
+
+
+Finaly, the second warning of full model indicates "The condition number is large, 1.76e+03. This might indicate that there are strong multicollinearity or other numerical problems", as it could be expected.
+
+During data exploration we found that there is a medium to medium-high correlation between the average moisture content of deep, compact organic layers and the average moisture content of loosely compacted organic layers of moderate depth (DC-DMC: 0.682) and between the expected rate of fire spread and the moisture content of litter and other cured fine fuels (ISI- FFMC: 0.532). Also, there is a inverse medium correlation (-0.527) between temperature (temp) and relative humidity (RH). Other relationships are noted between temperature (temp) and FWI system components (FFMC, DCM, DC and ISI)
+
+
+Python source file, iPython Notebook and other related files could be found at https://github.com/MColosso/Forest-Fires
